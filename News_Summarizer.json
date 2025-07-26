@@ -1,0 +1,1776 @@
+{
+  "name": "News Summarizer",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "316c948d-4b1f-4316-b431-d895026ff2eb",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://gnews.io/api/v4/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "AI"
+            },
+            {
+              "name": "apikey",
+              "value": "e864ac6db7e46c9af69325fbab7ecc6a"
+            },
+            {
+              "name": "lang",
+              "value": "en"
+            },
+            {
+              "name": "max",
+              "value": "20"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        -60
+      ],
+      "id": "f8cb4c12-8130-4a81-ac48-c53de6a2a185",
+      "name": "GNews"
+    },
+    {
+      "parameters": {
+        "url": "https://newsapi.org/v2/everything",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "AI"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Api-Key",
+              "value": "ae473d83f7d744709fd727036736624a"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        160
+      ],
+      "id": "9b61e4ba-5bde-4f5f-87e8-898ad16e7960",
+      "name": "NewsAPI"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3f125a3d-04d4-4819-ac28-c464ab3ca42b",
+              "name": "articles",
+              "value": "={{ $json.articles }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        440,
+        -60
+      ],
+      "id": "f169b329-442b-4ea4-b571-1cb11d7645d7",
+      "name": "Stringify"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0f1781dc-a55e-4d55-a76e-bb23691a2c84",
+              "name": "articles",
+              "value": "={{ $json.articles }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        440,
+        160
+      ],
+      "id": "b15c2ac4-e662-4dfc-8f1e-b5aa789ddede",
+      "name": "Stringify1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        680,
+        20
+      ],
+      "id": "e70acf80-c27a-4670-afcd-6160e209d394",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Pick the most interesting top 5 articles from the following and summarize into 1 or 2 lines:\n{{ $json.articles }}",
+        "options": {
+          "systemMessage": "Output format: Order your output from 1 to 5 and include the link to the source after the 1 or 2 line summary."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        900,
+        20
+      ],
+      "id": "54599f3f-0b47-43dd-ae13-392f58661892",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-1.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        880,
+        200
+      ],
+      "id": "72272d90-52f0-4e1a-b249-f50d56a2bda7",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "s1U0gcN2KPfYfbaF",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "489698023",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1260,
+        20
+      ],
+      "id": "157d1eb3-7379-4ab9-b2f9-f3762aa83d5b",
+      "name": "Telegram",
+      "webhookId": "2d84a401-a11a-4262-96a7-ec928a00a1d1",
+      "credentials": {
+        "telegramApi": {
+          "id": "2gNvi0irKEudDo2v",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "GNews": [
+      {
+        "json": {
+          "totalArticles": 96733,
+          "articles": [
+            {
+              "id": "704e7ca06c7901c12481c0b048e50311",
+              "title": "The market is betting staggering amounts on AI conjecture",
+              "description": "When investing in AI, keep your expectations in check. History suggests we should be cautious about assessing the impact of any technology",
+              "content": "Open this photo in gallery: Alphabet CEO Sundar Pichai speaks at a Google I/O event in Mountain View, California in 2024. Earlier this month, the company paid US$2.4-billion to license technology from early stage AI star Windsurf.Jeff Chiu/The Associ... [6887 chars]",
+              "url": "https://www.theglobeandmail.com/investing/markets/inside-the-market/article-stock-market-developing-ai-bidding-war/",
+              "image": "https://www.theglobeandmail.com/resizer/v2/GQ2KVCTC4VALTPWXRUBH4XGXOE.jpg?auth=45d8f384177c6485f45bc84a17b6ffac01793703f3485c9fa13909793f7ffa8a&width=1200&height=800&quality=80&smart=true",
+              "publishedAt": "2025-07-26T13:00:00Z",
+              "source": {
+                "id": "f5081afeaba654292dd91fffd29f9dd4",
+                "name": "The Globe and Mail",
+                "url": "https://www.theglobeandmail.com"
+              }
+            },
+            {
+              "id": "a7bf0fbac83a4e6435797f3ca3a6a65b",
+              "title": "Huawei shows off AI computing system to rival Nvidia’s top product",
+              "description": "Huawei has become widely regarded as China's most promising domestic supplier of chips essential for AI development, even though the company faces U.S. export restrictions.",
+              "content": "China’s Huawei Technologies showed off an AI computing system on Saturday that one industry expert has said rivals Nvidia’s most advanced offering, as the Chinese technology giant seeks to capture market share in the country’s growing artificial inte... [1813 chars]",
+              "url": "https://indianexpress.com/article/technology/huawei-shows-off-ai-computing-system-to-rival-nvidias-top-product-10151477/",
+              "image": "https://images.indianexpress.com/2025/07/Untitled-design-6-6.jpg",
+              "publishedAt": "2025-07-26T12:18:08Z",
+              "source": {
+                "id": "6a3aad3dbb44ac873f72b594aaea22c4",
+                "name": "The Indian Express",
+                "url": "https://indianexpress.com"
+              }
+            },
+            {
+              "id": "02f1f53158a519371fe3101c4ed6e18c",
+              "title": "How Lovable became a successful AI-powered app builder",
+              "description": "Lovable, a Swedish AI startup, has surpassed $100 million in annual recurring revenue with over 2.3 million active users. Discover its journey of democratizing app development through innovative tools like GPT Engineer, enabling non-coders to create seamlessly.",
+              "content": "Lovable, a Swedish AI startup, has crossed $100 million in annual recurring revenue, putting it ahead of most other software firms, including OpenAI. Currently, the firm has more than 2.3 million active users, and last reported 180,000 paying subscri... [1629 chars]",
+              "url": "https://indianexpress.com/article/explained/explained-sci-tech/lovable-ai-powered-app-builder-10151429/",
+              "image": "https://images.indianexpress.com/2025/07/lovable-.jpg",
+              "publishedAt": "2025-07-26T12:09:19Z",
+              "source": {
+                "id": "6a3aad3dbb44ac873f72b594aaea22c4",
+                "name": "The Indian Express",
+                "url": "https://indianexpress.com"
+              }
+            },
+            {
+              "id": "1a95b7344a66a43ea3179ae3313b8675",
+              "title": "Competition shows humans are still better than AI at coding - just",
+              "description": "Przemysław Dębiak, who beat OpenAI at world finals, says he may be last human to win due to incredible pace of technological progress",
+              "content": "Computers have taken the crown in chess, Go and poker, but when it comes to competitive coding, humans still have the edge – just.\nEarlier this month Przemysław Dębiak, a Polish coder and mind sports champion, narrowly clinched a victory over OpenAI’... [2911 chars]",
+              "url": "https://www.theguardian.com/technology/2025/jul/26/competition-shows-humans-are-still-better-than-ai-at-coding-just",
+              "image": "https://i.guim.co.uk/img/media/7f924c562d3855a4c565aeb811e5ce5d8443fa43/79_0_3560_2848/master/3560.jpg?width=1200&height=630&quality=85&auto=format&fit=crop&precrop=40:21,offset-x50,offset-y0&overlay-align=bottom%2Cleft&overlay-width=100p&overlay-base64=L2ltZy9zdGF0aWMvb3ZlcmxheXMvdGctZGVmYXVsdC5wbmc&enable=upscale&s=24e7d4329ca5c897397ca76230f808a6",
+              "publishedAt": "2025-07-26T11:56:28Z",
+              "source": {
+                "id": "01558c024928d45cf320f6f75eede787",
+                "name": "The Guardian",
+                "url": "https://www.theguardian.com"
+              }
+            },
+            {
+              "id": "2a8de3486ac3e27209bc1563a5738703",
+              "title": "Haier unveils F9 Front Load series with India's first AI colour touch panel",
+              "description": "Designed for modern Indian homes, the machine offers intelligent wash cycles, silent operation, and advanced hygiene features—all managed via the Hai Smart App. Priced at Rs 59990, this premium washing solution is now available across major offline and online channels.",
+              "content": "Haier unveils F9 Front Load series with India’s first AI colour touch panel Designed for modern Indian homes, the machine offers intelligent wash cycles, silent operation, and advanced hygiene features—all managed via the Hai Smart App. Priced at Rs ... [2187 chars]",
+              "url": "https://www.indiatvnews.com/technology/news/haier-unveils-f9-front-load-series-with-india-s-first-ai-colour-touch-panel-2025-07-26-1000678",
+              "image": "https://resize.indiatvnews.com/en/resize/newbucket/1200_-/2025/07/elon-musk-reportedly-on-the-verge-of-raising-billions-for-his-ai-company-2025-07-26t165736-1753529542.jpg",
+              "publishedAt": "2025-07-26T11:40:12Z",
+              "source": {
+                "id": "143b993b193f72147f3de29ebcfbf505",
+                "name": "India TV News",
+                "url": "https://www.indiatvnews.com"
+              }
+            },
+            {
+              "id": "a03f1383585d9bc8c88ca42949a4a895",
+              "title": "China proposes new global AI cooperation organization",
+              "description": "Trump's administration earlier released an AI blueprint aiming to vastly expand US AI exports to allies in a bid to maintain the American edge over China in the critical technology",
+              "content": "This is AI generated summarization, which may have errors. For context, always refer to the full article.\nPREMIER. In this file, China's Premier Li Qiang, delivers his speech at the ASEAN - Gulf Cooperation Council (GCC) - China Economic Forum offici... [4270 chars]",
+              "url": "https://www.rappler.com/world/asia-pacific/china-proposes-new-global-artificial-intelligence-cooperation-organization/",
+              "image": "https://www.rappler.com/tachyon/2025/05/china-li_ASEAN-MALAYSIA.jpg",
+              "publishedAt": "2025-07-26T11:31:21Z",
+              "source": {
+                "id": "1290fbc1799ff6b270a6f8b7e9761c18",
+                "name": "Rappler",
+                "url": "https://www.rappler.com"
+              }
+            },
+            {
+              "id": "0aec93841d6a6b3e6ac3768abeda1fdc",
+              "title": "More Power adopts AI in core operations to boost service",
+              "description": "MORE Electric and Power Corporation (More Power) has started integrating artificial intelligence (AI) into its core operations, becoming one of the...",
+              "content": "MORE Electric and Power Corporation (More Power) has started integrating artificial intelligence (AI) into its core operations, becoming one of the first in the power distribution industry to adopt AI in an effort to enhance service efficiency.\nThe c... [2017 chars]",
+              "url": "https://www.sunstar.com.ph/iloilo/more-power-adopts-ai-in-core-operations-to-boost-service-efficiency",
+              "image": "https://media.assettype.com/sunstar%2F2025-07-26%2F4tr4in3o%2FIMG20250726163211.jpg?w=1200&ar=40%3A21&auto=format%2Ccompress&ogImage=true&mode=crop&enlarge=true&overlay=false&overlay_position=bottom&overlay_width=100",
+              "publishedAt": "2025-07-26T11:05:15Z",
+              "source": {
+                "id": "8f697316c20ca510ecdfa51c8f969ff3",
+                "name": "SunStar Philippines",
+                "url": "https://www.sunstar.com.ph"
+              }
+            },
+            {
+              "id": "10037ef6c3d500f71d773bd5bba79a15",
+              "title": "I tried Gemini on my Galaxy Watch, and it completely changed how I use my phone",
+              "description": "An AI assistant on your wrist, perhaps, is the best way to keep the phone away. From reading emails to navigating the streets, Gemini on smartwatch comes in handy.",
+              "content": "A few weeks ago, Google announced that it is rolling out Gemini to WearOS-powered smartwatches from Pixel, Samsung, Oppo and OnePlus. The much-anticipated update brought Gemini to my wrist, which meant I no longer had to pull out my phone from my poc... [4547 chars]",
+              "url": "https://indianexpress.com/article/technology/artificial-intelligence/google-gemini-ai-wearos-galaxy-watch-10150987/",
+              "image": "https://images.indianexpress.com/2025/07/Gemini-smartwatch.png",
+              "publishedAt": "2025-07-26T10:45:25Z",
+              "source": {
+                "id": "6a3aad3dbb44ac873f72b594aaea22c4",
+                "name": "The Indian Express",
+                "url": "https://indianexpress.com"
+              }
+            },
+            {
+              "id": "73e068bd47d2dc407b077b7eacfe0005",
+              "title": "AI&US-‘It’s the most empathetic voice in my life’: How AI is transforming the lives of neurodivergent people",
+              "description": "However, since 2022, D’hotman has been a regular user of ChatGPT, the popular AI-powered chatbot from OpenAI, relying on it to overcome communication barriers at work and in her personal life.",
+              "content": "* For full picture story, see here: https://reut.rs/40Aa2NB\nBy Hani Richter July 26 - For Cape Town-based filmmaker Kate D'hotman, connecting with movie audiences comes naturally. Far more daunting is speaking with others. \"I've never understood how ... [6666 chars]",
+              "url": "https://www.devdiscourse.com/article/technology/3517923-aius-its-the-most-empathetic-voice-in-my-life-how-ai-is-transforming-the-lives-of-neurodivergent-people",
+              "image": "https://www.devdiscourse.com/remote.axd?https://devdiscourse.blob.core.windows.net/imagegallery/27_06_2019_18_34_04_2312796.png?width=920&format=jpeg",
+              "publishedAt": "2025-07-26T10:03:56Z",
+              "source": {
+                "id": "c6a01ba91c1a2bc3f53f4707110bfee5",
+                "name": "Devdiscourse",
+                "url": "https://www.devdiscourse.com"
+              }
+            },
+            {
+              "id": "e96fa02198f4a861866e44c17af65cd6",
+              "title": "women using new tech less: study",
+              "description": "Women are using AI significantly less then men and it’s going to have a major impact on their careers, according to extensive research on the topic.",
+              "content": "A Harvard study found that women are using AI significantly less then men. (Pexels)\nAs artificial intelligence, or AI, becomes more integrated into our daily lives, a study from Harvard University suggests women are using it significantly less in the... [1816 chars]",
+              "url": "https://www.cp24.com/news/world/2025/07/26/women-are-using-ai-less-in-the-workplace-harvard-study-suggests/",
+              "image": "https://www.cp24.com/resizer/v2/AP53EZOOPYU726VFNGQGI6OWVM.jpg?smart=true&auth=c1a0bc45dc504a855f4c053288fc4d6d91e7a47bd0bae759d8432160308767c6&width=1200&height=630",
+              "publishedAt": "2025-07-26T09:00:00Z",
+              "source": {
+                "id": "85e5403407038478a5e7d8d100ff8e8f",
+                "name": "CP24 Toronto",
+                "url": "https://www.cp24.com"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "NewsAPI": [
+      {
+        "json": {
+          "status": "ok",
+          "totalResults": 128054,
+          "articles": [
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Elizabeth Lopatto",
+              "title": "Can the music industry make AI the next Napster?",
+              "description": "Sure, everyone hates record labels - but the AI industry has figured out how to make them look like heroes. So that's at least one very impressive accomplishment for AI. AI is cutting a swath across a number of creative industries - with AI-generated book cov…",
+              "url": "https://www.theverge.com/ai-artificial-intelligence/695290/suno-udio-ai-music-legal-copyright-riaa",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/06/257760_Music_copyright_might_actually_tame_AI_CVirginia2.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-06-30T19:06:06Z",
+              "content": "Can the music industry make AI the next Napster?\r\nTurns out copyright law in music is special and the record labels are bringing out the big guns.\r\nCan the music industry make AI the next Napster?\r\nT… [+16022 chars]"
+            },
+            {
+              "source": {
+                "id": "wired",
+                "name": "Wired"
+              },
+              "author": "Veronique Greenwood",
+              "title": "Where Are All the AI Drugs?",
+              "description": "In an industry where 90 percent of drug candidates fail before reaching the market, a handful of startups are betting everything on AI to beat the odds.",
+              "url": "https://www.wired.com/story/artificial-intelligence-drug-discovery/",
+              "urlToImage": "https://media.wired.com/photos/68716a268500f5615ba1245f/191:100/w_1280,c_limit/BH_AI_Drug_Discovery-2.jpg",
+              "publishedAt": "2025-07-17T10:00:00Z",
+              "content": "A new drug usually starts with a tragedy.\r\nPeter Ray knows that. Born in what is now Zimbabwe, the child of a mechanic and a radiology technician, Ray fled with his family to South Africa during the … [+3435 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Victoria Song",
+              "title": "The unbearable obviousness of AI fitness summaries",
+              "description": "After nearly a decade of wearables testing, I've amassed a truly terrifying amount of health and fitness data. And while I enjoy poring over my daily data, there's one part I've come to loathe: AI summaries. Over the last two years, a deluge of AI-generated s…",
+              "url": "https://www.theverge.com/fitness-trackers/694140/ai-summaries-fitness-apps-strava-oura-whoop-wearables",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/06/257829_AI_fitness_summaries_CVirginia2.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-06-27T16:56:26Z",
+              "content": "The unbearable obviousness of AI fitness summaries\r\nI asked AI for insight into my health data. It gave me a regurgitated book report.\r\nThe unbearable obviousness of AI fitness summaries\r\nI asked AI … [+7692 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Jess Weatherbed",
+              "title": "Android’s Circle to Search feature gets AI and gaming upgrades",
+              "description": "Google is adding new AI features to Android’s Circle to Search and Gemini Live tools. The update was announced today, alongside the launch of the next-generation Galaxy foldables, and it includes new Gemini Live capabilities for Samsung devices and integrates…",
+              "url": "https://www.theverge.com/news/702291/android-google-ai-mode-circle-to-search-update",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/07/Google-AI-Mode-Circle-to-Search-hero.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-07-09T13:51:06Z",
+              "content": "Google is bringing some AI support updates to Samsung’s latest generation of Galaxy foldables and watches.\r\n\n\nGoogle is adding new AI features to Android’s Circle to Search and Gemini Live tools. The… [+2352 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Emma Roth",
+              "title": "Amazon buys Bee AI wearable that listens to everything you say",
+              "description": "Amazon is acquiring Bee, a startup that puts AI on your wrist. Bee CEO Maria de Lourdes Zollo says on LinkedIn that the company is joining Amazon to help “bring truly personal, agentic AI to even more customers.” Bee makes a $49.99 Fitbit-like device that lis…",
+              "url": "https://www.theverge.com/news/711621/amazon-bee-ai-wearable-acquisition",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/07/257568_Bee_AI_AKrales_0032.webp?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-07-22T17:50:56Z",
+              "content": "<ul><li></li><li></li><li></li></ul>\r\nBee is a Fitbit-like device that transcribes your conversations and serves up daily summaries.\r\nBee is a Fitbit-like device that transcribes your conversations a… [+3038 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Nicole Froio",
+              "title": "AI is ruining houseplant communities online",
+              "description": "\"Maybe you could organize your plants like this,\" my friend's text message said, with an attached photo of white pots of plants floating midair in front of a huge, sunny window. As a newbie plant collector, I do need to organize my growing collection of flora…",
+              "url": "https://www.theverge.com/ai-artificial-intelligence/691355/ai-is-ruining-houseplant-communities-online",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/06/257666_futureproofing_plants.jpg?quality=90&strip=all&crop=0%2C10.646174383746%2C100%2C78.707651232508&w=1200",
+              "publishedAt": "2025-06-25T20:59:46Z",
+              "content": "Its disconnecting us further from reality, relationships with nature, and also our community.\r\nIts disconnecting us further from reality, relationships with nature, and also our community.\r\nMaybe you… [+7217 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Emma Roth",
+              "title": "Perplexity just launched an AI web browser",
+              "description": "Perplexity, the startup behind the AI “answer” engine, has just launched its own web browser. The browser, called Comet, incorporates Perplexity’s AI search tools and assistant in a way that CEO Aravind Srinivas says “transforms entire browsing sessions into …",
+              "url": "https://www.theverge.com/news/703037/perplexity-ai-web-browser-comet-launch",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/07/perplexity-comet-assistant.png?quality=90&strip=all&crop=0,16.342557965595,100,67.314884068811",
+              "publishedAt": "2025-07-09T16:53:31Z",
+              "content": "Comet’s AI assistant can answer questions about what’s on your screen. | Image: Perplexity\r\n\n\nPerplexity, the startup behind the AI “answer” engine, has just launched its own web browser. The browser… [+1962 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Jacob Kastrenakes",
+              "title": "The creepy AI era is here",
+              "description": "Would you like Siri more if it had a face? Ever since Elon Musk added a weird anime girlfriend to Grok, I've been wondering if there's a not-so-distant future where all of our AI assistants are much more clearly personified. Grok makes it feel deeply uncomfor…",
+              "url": "https://www.theverge.com/the-vergecast/709389/alexa-plus-grok-waifu-sony-rx1riii-vergecast",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/07/VRG_VST_0718_Site.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-07-18T12:56:17Z",
+              "content": "On The Vergecast: Alexa Plus, Waifu Grok, Sonys RX1R III, and Thunder Round take two.\r\nOn The Vergecast: Alexa Plus, Waifu Grok, Sonys RX1R III, and Thunder Round take two.\r\nWould you like Siri more … [+1248 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Jess Weatherbed",
+              "title": "Meta snubs the EU’s voluntary AI guidelines",
+              "description": "Meta says it won’t sign the European Union’s artificial intelligence code of practice agreement, warning that “Europe is heading down the wrong path on AI.” The code published by the EU on July 10th is a voluntary set of guidelines to help companies follow th…",
+              "url": "https://www.theverge.com/news/710576/meta-eu-ai-act-code-of-practice-agreement",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/02/STK043_VRG_Illo_N_Barclay_1_Meta.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-07-21T11:13:49Z",
+              "content": "Europe is heading down the wrong path on AI.\r\nMeta says it wont sign the European Unions artificial intelligence code of practice agreement, warning that Europe is heading down the wrong path on AI. … [+2127 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Jess Weatherbed",
+              "title": "Google AI Mode will generate fake clothes to help you buy real ones",
+              "description": "Google is injecting more generative AI into its online shopping experience in Search. An upcoming feature for AI Mode will generate images of outfits and decor ideas based on user descriptions, to help people find visually similar products. Also launching is …",
+              "url": "https://www.theverge.com/news/712924/google-shopping-ai-mode-fake-clothes",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/07/Google-AI-shopping-features-hero-AI-mode.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-07-24T12:56:47Z",
+              "content": "<ul><li></li><li></li><li></li></ul>\r\nA virtual try-on mode will also let you see what clothes look like on you before you buy.\r\nA virtual try-on mode will also let you see what clothes look like on … [+3136 chars]"
+            },
+            {
+              "source": {
+                "id": "wired",
+                "name": "Wired"
+              },
+              "author": "Mattha Busby",
+              "title": "People Are Using AI Chatbots to Guide Their Psychedelic Trips",
+              "description": "As psychedelic companies and therapy apps experiment with AI, people are already taking huge doses of drugs and using chatbots to process their trips.",
+              "url": "https://www.wired.com/story/people-are-using-ai-chatbots-to-guide-their-psychedelic-trips/",
+              "urlToImage": "https://media.wired.com/photos/6849b02f857bb1b60f7b5170/191:100/w_1280,c_limit/061125_Psychedelic-Therapy-4.jpg",
+              "publishedAt": "2025-07-07T11:00:00Z",
+              "content": "Entrepreneur Christian Angermayer, the founder of psychedelic biotech Atai Life Sciences, has spoken of AI helping to assist human psychedelic therapists through motivational check-ins with patients … [+3060 chars]"
+            },
+            {
+              "source": {
+                "id": "wired",
+                "name": "Wired"
+              },
+              "author": "Katie Drummond",
+              "title": "Bryan Johnson Is Going to Die",
+              "description": "Millions of dollars in treatments, supplements, and scans. Immortality through AI. Bryan Johnson’s longevity script has everything—except an ending.",
+              "url": "https://www.wired.com/story/big-interview-bryan-johnson/",
+              "urlToImage": "https://media.wired.com/photos/6879b982687e96e4f2948539/191:100/w_1280,c_limit/2025_EH_BJ_WIREDMAG_DSC08846.jpg",
+              "publishedAt": "2025-07-21T10:00:00Z",
+              "content": "At first, the two bowls of fruit on Bryan Johnsons kitchen island look perfect. Theyre brimming with plump kiwis, hardy avocados, and ripened bananas. These are the food of the gods, I figure, for a … [+3518 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Jay Peters",
+              "title": "YouTube search gets its own version of Google’s AI Overviews",
+              "description": "Google is bringing an AI Overviews-like feature to another product: YouTube. The video streaming platform may now show an “AI-powered search results carousel” when some YouTube Premium members in the US make searches related to “shopping, travel, or things to…",
+              "url": "https://www.theverge.com/news/693658/youtube-search-ai-overviews-google",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/03/acastro_STK092_04.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-06-26T16:22:57Z",
+              "content": "Premium members may see an AI-written summary pop up when they search.\r\nGoogle is bringing an AI Overviews-like feature to another product: YouTube. The video streaming platform may now show an AI-po… [+940 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Victoria Song",
+              "title": "Elon Musk teases AI anime boyfriend based on Edward Cullen",
+              "description": "Days after introducing an AI 'waifu' companion for Grok, Elon Musk is now officially teasing a male version for the ladies. So far we can tell it is broody and dark-haired, and according to Musk, \"his personality is inspired by Edward Cullen from Twilight and…",
+              "url": "https://www.theverge.com/ai-artificial-intelligence/708536/elon-musk-grok-xai-ai-boyfriend",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/07/Screenshot-2025-07-16-at-3.27.09%E2%80%AFPM.png?quality=90&strip=all&crop=0,24.25468391675,100,51.490632166501",
+              "publishedAt": "2025-07-16T20:09:24Z",
+              "content": "Look, Grok is for the ladies too.\r\nDays after introducing an AI waifu companion for Grok, Elon Musk is now officially teasing a male version for the ladies. So far we can tell it is broody and dark-h… [+1375 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Emma Roth",
+              "title": "Proton is launching a privacy-focused AI chatbot",
+              "description": "Proton, the company behind the encrypted email service Proton Mail, has launched an AI assistant aimed at preserving user privacy. The new chatbot, called Lumo, can summarize documents, generate code, write emails, and more, while storing data locally on user…",
+              "url": "https://www.theverge.com/news/711860/proton-privacy-focused-ai-chatbot",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/07/02_Lumo_PR.png?quality=90&strip=all&crop=0%2C3.4613147178592%2C100%2C93.077370564282&w=1200",
+              "publishedAt": "2025-07-22T23:12:40Z",
+              "content": "<ul><li></li><li></li><li></li></ul>\r\nProton says it protects Lumos chats with zero-access encryption while storing them on users devices.\r\nProton says it protects Lumos chats with zero-access encryp… [+3851 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Jess Weatherbed",
+              "title": "Figma’s AI app building tool is now available for everyone",
+              "description": "Figma Make, the prompt-to-app coding tool that Figma introduced earlier this year, is now available for all users. Similar to AI coding tools like Google’s Gemini Code Assist and Microsoft’s GitHub Copilot, Figma Make allows users to build working prototypes …",
+              "url": "https://www.theverge.com/news/712995/figma-make-ai-general-availability-announcement",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/07/Figma-Make-general-availability-hero.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-07-24T14:16:15Z",
+              "content": "<ul><li></li><li></li><li></li></ul>\r\nFigma Make is out of beta and no longer reserved just for Figmas full-access subscribers.\r\nFigma Make is out of beta and no longer reserved just for Figmas full-… [+3680 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Adi Robertson",
+              "title": "Did AI companies win a fight with authors? Technically",
+              "description": "In the past week, big AI companies have - in theory - chalked up two big legal wins. But things are not quite as straightforward as they may seem, and copyright law hasn't been this exciting since last month's showdown at the Library of Congress. First, Judge…",
+              "url": "https://www.theverge.com/analysis/694657/ai-copyright-rulings-anthropic-meta",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/04/STKS507_FTCxMETA_ANTITRUST_CVIRGINIA_D.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-06-27T23:12:24Z",
+              "content": "Did AI companies win a fight with authors? Technically\r\nMeta and Anthropic defended AI training as fair use, but with major caveats.\r\nDid AI companies win a fight with authors? Technically\r\nMeta and … [+11278 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Jess Weatherbed",
+              "title": "Gemini AI can now turn photos into videos",
+              "description": "Google just launched a new Gemini AI feature that lets you transform photos into video clips. The new photo-to-video capability is powered by Google’s Veo 3 video model, and it can transform reference images into eight-second videos complete with AI-generated…",
+              "url": "https://www.theverge.com/news/703885/google-gemini-ai-photo-video-feature-availability",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/02/STK255_Google_Gemini_D.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-07-10T13:00:24Z",
+              "content": "The feature is available to Google AI Ultra and Pro subscribers.\r\n\n\nGoogle just launched a new Gemini AI feature that lets you transform photos into video clips. The new photo-to-video capability is … [+1456 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Jess Weatherbed",
+              "title": "YouTube ‘clarifies’ its plan to demonetize spammy AI slop",
+              "description": "YouTube is trying to soothe concerns about an incoming update to its monetization policies following backlash from online creators. An announcement that YouTube would be updating restrictions around “inauthentic” content under the YouTube Partner Program guid…",
+              "url": "https://www.theverge.com/news/703772/youtube-monetization-policy-update-ai-spam",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/03/acastro_STK092_04.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-07-10T10:42:25Z",
+              "content": "An update to the platforms monetization rules will tighten restrictions on inauthentic content.\r\nYouTube is trying to soothe concerns about an incoming update to its monetization policies following b… [+2165 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Emma Roth",
+              "title": "Perplexity’s Comet is the AI browser Google wants",
+              "description": "Perplexity has just launched its agentic answer to Google Chrome — it’s called Comet, and it knocked out a slate of tasks on my behalf, though I think I could’ve done some faster myself. The new AI-powered browser is currently only available to Perplexity Max…",
+              "url": "https://www.theverge.com/news/709025/perplexity-comet-ai-browser-chrome-competitor",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/07/verge-comet.png?quality=90&strip=all&crop=0%2C11.33133881825%2C100%2C77.3373223635&w=1200",
+              "publishedAt": "2025-07-17T19:22:52Z",
+              "content": "Comet can buy stuff for me on Amazon and declutter my inbox but it takes a minute.\r\nPerplexity has just launched its agentic answer to Google Chrome its called Comet, and it knocked out a slate of ta… [+5461 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Emma Roth",
+              "title": "Cloudflare will now block AI crawlers by default",
+              "description": "The major internet architecture provider Cloudflare will now block known AI web crawlers by default to prevent them from “accessing content without permission or compensation,” according to an announcement on Tuesday. With the change, Cloudflare will start as…",
+              "url": "https://www.theverge.com/news/695501/cloudflare-block-ai-crawlers-default",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/06/STKB326_CLOUDFLARE_B.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-06-30T22:56:25Z",
+              "content": "The internet architecture provider will also let some publishers make known AI scrapers pay to crawl their sites.\r\nThe major internet architecture provider Cloudflare will now block known AI web craw… [+2569 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Tina Nguyen",
+              "title": "Senate drops plan to ban state AI laws",
+              "description": "The US Senate has voted overwhelmingly to remove a moratorium on states regulating AI systems from the Republican “big, beautiful bill.” Legislators agreed by a margin of 99 to 1 to drop the controversial proposal during a protracted fight over the omnibus bu…",
+              "url": "https://www.theverge.com/politics/695495/senate-drops-ai-moratorium-budget-bill",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/06/gettyimages-2222154603.jpg?quality=90&strip=all&crop=0%2C10.72854282552%2C100%2C78.542914348961&w=1200",
+              "publishedAt": "2025-07-01T13:15:48Z",
+              "content": "A plan for simply softening the 10-year moratorium fell through.\r\nThe US Senate has voted overwhelmingly to remove a moratorium on states regulating AI systems from the Republican big, beautiful bill… [+3985 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Elise Morton",
+              "title": "The photographer using AI to reconstruct stories lost to censorship",
+              "description": "Video screens glow softly from the floor, looping footage of salt lakes, steppe villages, and decaying nuclear test sites. Suspended above them is a large handwoven textile map, crafted by artisans in Kazakhstan. The tapestry maps 12 significant sites across …",
+              "url": "https://www.theverge.com/ai-artificial-intelligence/688648/almagul-menlibayeva-ai-reimagining-censored-government-work",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/06/Solar-Eclipse-Art-by-Almagul-Menlibayeva-May-2022.jpg?quality=90&strip=all&crop=0%2C15.095986038394%2C100%2C69.808027923211&w=1200",
+              "publishedAt": "2025-06-25T16:10:28Z",
+              "content": "Almagul Menlibayeva looks at AI as a way to reflect the biases of its creators.\r\nVideo screens glow softly from the floor, looping footage of salt lakes, steppe villages, and decaying nuclear test si… [+6404 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Emma Roth",
+              "title": "Racist videos made with AI are going viral on TikTok",
+              "description": "Racist videos that appear to be created with Google’s AI video generation tool Veo 3 have raked in millions of views across TikTok, according to findings from the nonprofit media watchdog Media Matters. The AI-generated videos uncovered by the organization ar…",
+              "url": "https://www.theverge.com/news/697188/racist-ai-generated-videos-google-veo-3-tiktok",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/07/STK414_AI_CVIRGINIA_2_D.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-07-02T22:05:47Z",
+              "content": "Videos that may have been created with Google Veo 3 depict racist tropes targeting Black people, among others, according to Media Matters.\r\nRacist videos that appear to be created with Googles AI vid… [+1649 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Jess Weatherbed",
+              "title": "Google’s Discover page now summarizes news with AI",
+              "description": "Google is rolling out AI-generated summaries directly within Discover, its personalized news feed nestled within the Google Search app. TechCrunch reports that some users in the US are seeing Discover cards on iOS and Android that provide the new summaries in…",
+              "url": "https://www.theverge.com/news/708089/google-discover-ai-summaries-ios-android",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/07/Google-Discover-AI-summaries-hero.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-07-16T11:02:02Z",
+              "content": "TechCrunch\" data-portal-copyright=\"Image: Google / TechCrunch\" data-has-syndication-rights=\"1\" src=\"https://platform.theverge.com/wp-content/uploads/sites/2/2025/07/Google-Discover-AI-summaries-hero.… [+2232 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Hayden Field",
+              "title": "Trump is bringing back the AI law moratorium",
+              "description": "The White House unveiled its long-awaited “AI Action Plan” on Wednesday, and it included a zombie: A resurrected form of the controversial AI law moratorium that died a very public death.  The failed congressional moratorium would have stipulated that no stat…",
+              "url": "https://www.theverge.com/ai-artificial-intelligence/712537/trump-ai-action-plan-white-house-ai-law-moratorium",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/02/STK470_AI_LAW_CVIRGINIA_C.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-07-23T17:46:34Z",
+              "content": "<ul><li></li><li></li><li></li></ul>\r\nStates could be barred from certain funding over laws seen as hindering AI advancement.\r\nStates could be barred from certain funding over laws seen as hindering … [+3918 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Jess Weatherbed",
+              "title": "Errors found in US judge’s withdrawn decision stink of AI",
+              "description": "A US district court judge has withdrawn his decision in a biopharma securities case after lawyers noted that his opinion referenced fake quotes and other erroneous case information — mistakes mirroring errors in other legal cases that have been attributed to …",
+              "url": "https://www.theverge.com/news/713653/judge-withdraws-cormedix-case-ai-citation-errors",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/05/STK470_AI_LAW_CVIRGINIA_A.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-07-25T10:30:01Z",
+              "content": "<ul><li></li><li></li><li></li></ul>\r\nThe opinion cited made-up quotes and misstated case outcomes, errors that AI tools are known to hallucinate.\r\nThe opinion cited made-up quotes and misstated case… [+2824 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Jay Peters",
+              "title": "Meta’s AI copyright win comes with a warning about fair use",
+              "description": "Meta won a major legal ruling in an AI copyright lawsuit brought by 13 authors alleging that the company illegally trained its AI systems on their work without permission. On Wednesday, Judge Vince Chhabria ruled in Meta’s favor, saying it is “entitled to sum…",
+              "url": "https://www.theverge.com/news/693437/meta-ai-copyright-win-fair-use-warning",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/02/STK043_VRG_Illo_N_Barclay_2_Meta.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-06-26T00:13:44Z",
+              "content": "The federal judge who ruled in Metas favor still isnt convinced its use of copyrighted materials for AI training qualifies as fair use. \r\nMeta won a major legal ruling in an AI copyright lawsuit brou… [+1858 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Jay Peters",
+              "title": "Grok stops posting text after flood of antisemitism and Hitler praise",
+              "description": "On Tuesday, X users observed Grok celebrating Adolf Hitler and making antisemitic posts, and X owner xAI now says it’s “actively working to remove” what it calls “inappropriate posts” made by the AI chatbot. The new posts appeared following a recent update th…",
+              "url": "https://www.theverge.com/news/701884/grok-antisemitic-hitler-posts-elon-musk-x-xai",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/05/STK262_GROK_B_C.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-07-09T00:39:51Z",
+              "content": "xAI says its actively working to remove posts by the AI chatbot.\r\nOn Tuesday, X users observed Grok celebrating Adolf Hitler and making antisemitic posts, and X owner xAI now says its actively workin… [+2524 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Tina Nguyen",
+              "title": "Facebook is starting to feed its AI with private, unpublished photos",
+              "description": "For years, Meta's trained its AI programs using the billions of public images uploaded by users onto Facebook and Instagram's servers. But apparently, Meta has decided to try training its AI on the billions of images that users haven't uploaded to those serve…",
+              "url": "https://www.theverge.com/meta/694685/meta-ai-camera-roll",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/06/257467_Meta_Quest_3S_AKrales_0117.webp?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-06-27T23:06:45Z",
+              "content": "Always read the terms and conditions, folks.\r\nFor years, Metas trained its AI programs using the billions of public images uploaded by users onto Facebook and Instagrams servers. But apparently, Meta… [+2353 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Hayden Field",
+              "title": "Musk makes grand promises about Grok 4 in the wake of a Nazi chatbot meltdown",
+              "description": "Elon Musk’s live demo of Grok 4, the latest big-ticket model from his AI startup, began with high-intensity music, claims of a “ludicrous rate of progress,” and a lot of chatter on X about Grok’s scandal-filled week.  Musk pronounced it to be “the smartest AI…",
+              "url": "https://www.theverge.com/x-ai/703721/grok-4-x-ai-elon-musk-live-demo",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/04/STK171_VRG_Illo_16_Normand_ElonMusk_16.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-07-10T05:50:29Z",
+              "content": "Musk makes grand promises about Grok 4 in the wake of a Nazi chatbot meltdown\r\nThe late evening live demo featured rambling on whether AI would be bad or good for humanity.\r\nMusk makes grand promises… [+5065 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Jess Weatherbed",
+              "title": "Slack says its AI can make sense of your company’s jargon",
+              "description": "Slack is using AI to help business users quickly understand confusing company language and concentrate on their most important tasks. The communication platform announced that it will “soon” be adding a feature that explains workplace jargon, and an AI writin…",
+              "url": "https://www.theverge.com/news/708820/slack-ai-message-context-canvas-writing-assistant",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/07/Slack-explain-this-message-ai.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-07-17T12:00:34Z",
+              "content": "A writing assistant for canvases and a feature that explains the context of messages are both coming soon.\r\nSlack is using AI to help business users quickly understand confusing company language and … [+2025 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "David Pierce",
+              "title": "What Meta and Anthropic really won in court",
+              "description": "A lot of the future of AI will be settled in court. From publishers to authors to artists to Hollywood conglomerates, the creative industry is picking a big copyright fight over the vast quantities of data used to train AI models - and the ultimate output of …",
+              "url": "https://www.theverge.com/the-vergecast/694075/ai-lawsuits-meta-anthropic-tesla-trump-vergecast",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/06/VRG_VST_0627_Site.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-06-27T12:53:07Z",
+              "content": "On The Vergecast: what the AI rulings really mean, more Trump Phone nonsense, and whats next for Metas face computers.\r\nOn The Vergecast: what the AI rulings really mean, more Trump Phone nonsense, a… [+2053 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Emma Roth",
+              "title": "Google’s Doppl app took off my socks",
+              "description": "I just tried on five different outfits in about 10 minutes — or at least my AI lookalike did. That’s all thanks to Doppl, a new app that Google is testing, which I used to create AI-generated clips of myself wearing outfits that I found across the web. It mos…",
+              "url": "https://www.theverge.com/news/694087/google-doppl-app-test-launch-ai",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/06/doppl-app-screenshot.png?quality=90&strip=all&crop=0%2C4.1969261948995%2C100%2C91.606147610201&w=1200",
+              "publishedAt": "2025-06-27T13:58:21Z",
+              "content": "Google is testing a new app that can create AI-generated clips of you wearing outfits you find on the web.\r\nGoogle is testing a new app that can create AI-generated clips of you wearing outfits you f… [+3472 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Jay Peters",
+              "title": "Google is rolling out its AI-powered ‘Ask Photos’ search again – and it has a speed boost",
+              "description": "After quietly pausing the rollout of Google Photos’ AI-powered “Ask Photos” search tool, Google is now expanding access once again and making some improvements to the feature. Google’s Gemini AI models power Ask Photos so that you can ask complex questions to…",
+              "url": "https://www.theverge.com/news/694016/google-ask-photos-ai-gemini-search-speed-latency-boost",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/05/STKB353_GOOGLE_PHOTOS_D.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-06-26T23:42:26Z",
+              "content": "The tool now should be faster for simpler searches.\r\nAfter quietly pausing the rollout of Google Photos AI-powered Ask Photos search tool, Google is now expanding access once again and making some im… [+776 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Jess Weatherbed",
+              "title": "Adobe’s new AI tool turns silly noises into realistic audio effects",
+              "description": "Adobe is launching new generative AI filmmaking tools that provide fun ways to create sound effects and control generated video outputs. Alongside the familiar text prompts that typically allow you to describe what Adobe’s Firefly AI models should make or edi…",
+              "url": "https://www.theverge.com/news/708798/adobe-firefly-ai-generate-sound-effects-video-composition",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/07/Generate-Sound-Effects.png?quality=90&strip=all&crop=0%2C3.4613147178592%2C100%2C93.077370564282&w=1200",
+              "publishedAt": "2025-07-17T13:02:38Z",
+              "content": "In this example, you’d record yourself mimicking the sound of a rocket taking off. Have at it.\r\n\n\nAdobe is launching new generative AI filmmaking tools that provide fun ways to create sound effects a… [+2553 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Richard Lawler",
+              "title": "xAI explains the Grok Nazi meltdown as Tesla puts Elon’s bot in its cars",
+              "description": "Several days after temporarily shutting down the Grok AI bot that was producing antisemitic posts and praising Hitler in response to user prompts, Elon Musk’s AI company tried to explain why that happened. In a series of posts on X, it said that “…we discover…",
+              "url": "https://www.theverge.com/news/706498/xai-grok-hitler-antisemitism-tesla-ai-bot",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/05/STK262_GROK_B_B.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-07-13T00:54:56Z",
+              "content": "xAI blamed an upstream code update that triggered an unintended action.\r\nSeveral days after temporarily shutting down the Grok AI bot that was producing antisemitic posts and praising Hitler in respo… [+2535 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Adi Robertson",
+              "title": "The White House orders tech companies to make AI bigoted again",
+              "description": "After delivering a rambling celebration of tariffs and a routine about women's sports, President Donald Trump entertained a crowd, which was there to hear about his new AI Action Plan, with one his favorite topics: \"wokeness.\" Trump complained that AI compani…",
+              "url": "https://www.theverge.com/policy/713222/trump-woke-ai-executive-order-chatbots-llms",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/07/gettyimages-2226709681.jpg?quality=90&strip=all&crop=0%2C10.760381478407%2C100%2C78.479237043186&w=1200",
+              "publishedAt": "2025-07-24T19:18:17Z",
+              "content": "<ul><li></li><li></li><li></li></ul>\r\nA ban on woke AI in government aims to control the politics of chatbots.\r\nA ban on woke AI in government aims to control the politics of chatbots.\r\nby\r\nAdi Rober… [+9044 chars]"
+            },
+            {
+              "source": {
+                "id": "wired",
+                "name": "Wired"
+              },
+              "author": "Paresh Dave",
+              "title": "Microsoft, OpenAI, and a US Teachers’ Union Are Hatching a Plan to ‘Bring AI into the Classroom’",
+              "description": "The National Academy for AI Instruction will make artificial intelligence training accessible to educators across the country, according to leaked details.",
+              "url": "https://www.wired.com/story/microsoft-openai-and-a-us-teachers-union-are-hatching-a-plan-to-bring-ai-into-the-classroom/",
+              "urlToImage": "https://media.wired.com/photos/686cf3640aa10adb78d4ecce/191:100/w_1280,c_limit/GettyImages-2140836981.jpg",
+              "publishedAt": "2025-07-08T11:30:08Z",
+              "content": "Microsoft and OpenAI are planning to announce Tuesday that they are helping to launch an AI training center for members of the second-largest teachers union in the US, according to details about the … [+3552 chars]"
+            },
+            {
+              "source": {
+                "id": "wired",
+                "name": "Wired"
+              },
+              "author": "Megan Farokhmanesh",
+              "title": "How Video Games Became the New Battleground for Actors and AI Protections",
+              "description": "Voice actors ended their 11-month strike of the video game industry, but their fight against AI is only just beginning.",
+              "url": "https://www.wired.com/story/video-games-voice-actors-strike-over-artificial-intelligence/",
+              "urlToImage": "https://media.wired.com/photos/686eb4d56b0ab9affa44e8fd/191:100/w_1280,c_limit/Hollywood-Actors-Video-Game-Publishers-Agree-AI-Use-Games-Culture-2169079499.jpg",
+              "publishedAt": "2025-07-10T17:13:07Z",
+              "content": "On Wednesday, members of the Screen Actors GuildAmerican Federation of Television and Radio Artists, or SAG-AFTRA, voted to ratify a new contract for video game performers, officially bringing an end… [+2898 chars]"
+            },
+            {
+              "source": {
+                "id": "wired",
+                "name": "Wired"
+              },
+              "author": "Molly Taft",
+              "title": "Trump and the Energy Industry Are Eager to Power AI With Fossil Fuels",
+              "description": "At a Pittsburgh summit, the Trump administration, energy executives, and tech barons joined as one to promote AI as the future of fossil fuels.",
+              "url": "https://www.wired.com/story/trump-energy-industry-ai-fossil-fuels-pittsburgh-summit/",
+              "urlToImage": "https://media.wired.com/photos/6876abf629002effc2c6739b/191:100/w_1280,c_limit/Pittsburgh-AI-Summit-Science-2225249320.jpg",
+              "publishedAt": "2025-07-16T16:16:45Z",
+              "content": "The industry is finding a willing partner in the Trump administration. Since taking office, Trump has used AI as a lever to open up opportunities for fossil fuels, including a well-publicized effort … [+2859 chars]"
+            },
+            {
+              "source": {
+                "id": "wired",
+                "name": "Wired"
+              },
+              "author": "Sam Apple",
+              "title": "My Couples Retreat With 3 AI Chatbots and the Humans Who Love Them",
+              "description": "I found people in serious relationships with AI partners and planned a weekend getaway for them at a remote Airbnb. We barely survived.",
+              "url": "https://www.wired.com/story/couples-retreat-with-3-ai-chatbots-and-humans-who-love-them-replika-nomi-chatgpt/",
+              "urlToImage": "https://media.wired.com/photos/685c5c8d5137f226cae15ae5/191:100/w_1280,c_limit/WIRED-AIRomance-HR-04465.jpg",
+              "publishedAt": "2025-06-26T10:00:00Z",
+              "content": "I found the human-AI couples by posting in relevant Reddit communities. My initial outreach hadnt gone well. Some of the Redditors were convinced I was going to present them as weirdos. My intentions… [+4318 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Luc Olinga",
+              "title": "Google’s AI Master Plan in One Number",
+              "description": "With an $85 billion war chest, Google is waging an infrastructure arms race to own the physical foundation of the AI revolution.",
+              "url": "https://gizmodo.com/googles-ai-master-plan-in-one-number-2000633631",
+              "urlToImage": "https://gizmodo.com/app/uploads/2025/01/GettyImages-2177657481-1200x675.jpg",
+              "publishedAt": "2025-07-24T13:30:18Z",
+              "content": "Alphabet, the parent company of Google, delivered a standout quarterly report on Wednesday, with robust growth across Search, YouTube, and Cloud. But buried beneath the strong revenues was a number t… [+4068 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Gizmodo Deals",
+              "title": "Galaxy Buds 3 Pro Hit New Record Low, Amazon Selling Them Cheaper Than Samsung’s Own Site",
+              "description": "These are the best truly AI-powered earbuds.",
+              "url": "https://gizmodo.com/galaxy-buds-3-pro-hit-new-record-low-amazon-selling-them-cheaper-than-samsungs-own-site-2000620184",
+              "urlToImage": "https://gizmodo.com/app/uploads/2024/11/galaxy-buds3-pro.jpg",
+              "publishedAt": "2025-06-25T15:25:34Z",
+              "content": "Samsung has truly surpassed all expectations in its ongoing work in artificial intelligence and its new wireless earbuds have turned out to be one of the best available on the market. The Galaxy Buds… [+1873 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Matt Novak",
+              "title": "Delta Wants 20% of Flights to Have AI-Powered Dynamic Pricing by the End of 2025",
+              "description": "The company calls it \"leveraging AI-enhanced pricing solutions.\"",
+              "url": "https://gizmodo.com/delta-wants-20-of-flights-to-have-ai-powered-dynamic-pricing-by-the-end-of-2025-2000630389",
+              "urlToImage": "https://gizmodo.com/app/uploads/2025/07/delta-flight-2025-1200x675.jpg",
+              "publishedAt": "2025-07-17T12:40:29Z",
+              "content": "Last year, Delta Air Lines announced it was testing out dynamic pricing on some flights using tools built by the tech company Fetcherr. And while the test was initially limited, executives from the c… [+2740 chars]"
+            },
+            {
+              "source": {
+                "id": "wired",
+                "name": "Wired"
+              },
+              "author": "Reece Rogers",
+              "title": "AI Videos of Black Women Depicted as Primates Are Going Viral",
+              "description": "Some Instagram creators are using Google’s Veo 3 and racking up millions of views on AI videos of “bigfoot baddies.” They’ll teach you how to make them for $15.",
+              "url": "https://www.wired.com/story/ai-videos-black-women-depicted-as-primates-viral/",
+              "urlToImage": "https://media.wired.com/photos/6862f52074cbc871868bfaa6/191:100/w_1280,c_limit/meta-aivideos-gear-2150782389.jpg",
+              "publishedAt": "2025-07-01T17:31:30Z",
+              "content": "An AI-generated bigfoot baddie, with acrylic nails and a pink wig, speaks directly to her imaginary audience using an iPhone. We might have to go on the run, she says. Im wanted for a false report on… [+3036 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Matt Novak",
+              "title": "The Rise of AI Is Making Life Even Harder for Real People in Gaza",
+              "description": "Gizmodo spoke with desperate Palestinians who were accused of being AI creations.",
+              "url": "https://gizmodo.com/the-rise-of-ai-is-making-life-even-harder-for-real-people-in-gaza-2000607395",
+              "urlToImage": "https://gizmodo.com/app/uploads/2025/07/AI-in-gaza-1200x675.jpg",
+              "publishedAt": "2025-07-05T10:00:32Z",
+              "content": "Saeed Ismail is a real person. But no matter how much proof he posts online, people keep calling him fake.\r\nThe 22-year-old has endured almost two years of war in Gaza, as Israel continues an assault… [+18719 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Rhett Jones",
+              "title": "Jack Dorsey Drops His Second New App in a Week",
+              "description": "The Twitter founder says he used AI and ‘vibes’ to build both apps.",
+              "url": "https://gizmodo.com/jack-dorsey-drops-his-second-new-app-in-a-week-2000628855",
+              "urlToImage": "https://gizmodo.com/app/uploads/2023/05/60d61f05fdb29e4981ec7cbf7967e224.jpg",
+              "publishedAt": "2025-07-14T14:55:47Z",
+              "content": "Jack Dorsey is shipping. On Sunday, the Twitter co-founder shared a link on X (formerly Twitter) to a new app called Sun Day, which he claims helps users track their vitamin D intake. It’s the second… [+2961 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Kyle Barr",
+              "title": "YouTube Can’t Put Pandora’s AI Slop Back in the Box",
+              "description": "Google helped create the AI slop era, but now it hopes to reign it in.",
+              "url": "https://gizmodo.com/youtube-cant-put-pandoras-ai-slop-back-in-the-box-2000626819",
+              "urlToImage": "https://gizmodo.com/app/uploads/2025/06/Screenshot-2025-06-06-at-3.29.28-PM-1200x675.jpg",
+              "publishedAt": "2025-07-09T17:21:15Z",
+              "content": "YouTube is inundated with AI-generated slop, and thats not going to change anytime soon. Instead of cutting down on the total number of slop channels, the platform is planning to update its policies … [+4228 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "James Pero",
+              "title": "People Hated the ‘Squid Game’ Ending, so They’re Using AI to Make New Ones",
+              "description": "The AI slop aficionados said, \"Here, let me retcon that for you.\"",
+              "url": "https://gizmodo.com/people-hated-the-squid-game-ending-so-theyre-using-ai-to-make-new-ones-2000624999",
+              "urlToImage": "https://gizmodo.com/app/uploads/2024/12/Squidgame_redlight.jpg",
+              "publishedAt": "2025-07-07T15:42:15Z",
+              "content": "Pissing people off with your series finale is practically a rite of passage for beloved TV shows at this point. Just ask fans of The Sopranos, or Dexter, or Game of Thrones. And if you’re feeling but… [+2745 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Luc Olinga",
+              "title": "Microsoft Just Fired About 9,000 People While Making Billions",
+              "description": "The tech giant is posting staggering profits and leading the AI revolution.",
+              "url": "https://gizmodo.com/microsoft-just-fired-about-9000-people-while-making-billions-2000623667",
+              "urlToImage": "https://gizmodo.com/app/uploads/2023/05/cb79fa87c30c913a9fbbf251632de056.jpg",
+              "publishedAt": "2025-07-03T00:54:49Z",
+              "content": "Microsoft is laying off thousands of employees, even as its profits and stock price hit historic highs. For many worried about the future of work in the age of artificial intelligence, the message is… [+3915 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Raymond Wong",
+              "title": "Samsung Galaxy Watch 8 Hands-On: Gemini Arrives on Wrists and It Could Change Everything",
+              "description": "Google's AI chatbot could be the secret sauce to making smartwatches exciting again.",
+              "url": "https://gizmodo.com/samsung-galaxy-watch-8-hands-on-gemini-arrives-on-wrists-and-it-could-change-everything-2000625884",
+              "urlToImage": "https://gizmodo.com/app/uploads/2025/07/samsung-galaxy-watch-8-classic-10-1200x675.jpg",
+              "publishedAt": "2025-07-09T14:54:46Z",
+              "content": "The Galaxy Ultra’s squircle, or what the company calls “cushion” design, has trickled down to the new Galaxy Watch 8 and Galaxy Watch 8 Classic. The two new WearOS-powered smartwatches were announced… [+5310 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Luc Olinga",
+              "title": "It Started with Games, now It’s the World’s First Ever $4 Trillion Company",
+              "description": "Nvidia hits a historic milestone as Wall Street’s biggest bet on AI pays off.",
+              "url": "https://gizmodo.com/it-started-with-games-now-its-the-worlds-first-ever-4-trillion-company-2000626863",
+              "urlToImage": "https://gizmodo.com/app/uploads/2025/01/Nvidia-CEO-Jensen-Huang-RTX-50-Series-GPU-1-1200x675.jpg",
+              "publishedAt": "2025-07-09T17:14:33Z",
+              "content": "Nvidia made history on Wednesday, becoming the first company in the world to reach a $4 trillion market capitalization. This unprecedented milestone solidifies its position as a dominant force in the… [+4185 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Jon Fortt",
+              "title": "How AI can make us better decision-makers, with Cassie Kozyrkov",
+              "description": "Hello, and welcome to Decoder! This is Jon Fortt, CNBC journalist, cohost of Closing Bell Overtime, and creator and host of the Fortt Knox podcast. As you just heard Nilay say, I’m stepping in to guest host a few episodes of Decoder this summer while he’s out…",
+              "url": "https://www.theverge.com/decoder-podcast-with-nilay-patel/703269/cassie-kozyrkov-interview-ai-google-decision-scientist",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/07/DCD_Cassie-1.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-07-14T13:36:11Z",
+              "content": "Hello, and welcome to Decoder! This is Jon Fortt, CNBC journalist, cohost of Closing Bell Overtime, and creator and host of the Fortt Knox podcast. As you just heard Nilay say, I’m stepping in to gue… [+52680 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Adi Robertson",
+              "title": "A Republican state attorney general is formally investigating why AI chatbots don’t like Donald Trump",
+              "description": "Missouri Attorney General Andrew Bailey is threatening Google, Microsoft, OpenAI, and Meta with a deceptive business practices claim because their AI chatbots allegedly listed Donald Trump last on a request to “rank the last five presidents from best to worst…",
+              "url": "https://www.theverge.com/news/704851/missouri-ag-andrew-bailey-investigation-ai-chatbots-trump-ranking",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/07/gettyimages-2186528697.jpg?quality=90&strip=all&crop=0%2C10.737104219299%2C100%2C78.525791561403&w=1200",
+              "publishedAt": "2025-07-10T23:50:07Z",
+              "content": "Missouris AG is barely even trying to pretend this isnt censorship.\r\nMissouri Attorney General Andrew Bailey is threatening Google, Microsoft, OpenAI, and Meta with a deceptive business practices cla… [+3370 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Jay Peters",
+              "title": "Elon Musk’s AI bot adds a ridiculous anime companion with ‘NSFW’ mode",
+              "description": "People who pay for access to SuperGrok can now try the AI chatbot’s new “Companions” avatars, xAI owner Elon Musk announced Monday morning. The companions available currently include Ani, an anime avatar, and Rudy, a cartoony red panda. Ani also has what Test…",
+              "url": "https://www.theverge.com/news/706988/elon-musk-ai-bot-grok-supergrok-anime-companion-ani-rudy",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/07/IMG_7432_ab2997.jpg?quality=90&strip=all&crop=0%2C10.878958329278%2C100%2C78.242083341443&w=1200",
+              "publishedAt": "2025-07-14T20:06:08Z",
+              "content": "Ani is one of the new companions. Theres also a cartoony red panda.\r\nPeople who pay for access to SuperGrok can now try the AI chatbots new Companions avatars, xAI owner Elon Musk announced Monday mo… [+1021 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Allison Johnson",
+              "title": "Adding calendar events with a screenshot is AI at its finest",
+              "description": "Apple's AI capabilities have been less than impressive to date, but there's one new feature coming with iOS 26 that's actually really handy: adding stuff to your calendar with a screenshot. I've been testing this feature out for the past few weeks in the deve…",
+              "url": "https://www.theverge.com/tech/696885/ios-26-visual-intelligence-calendar-screenshot-gemini-assistant",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/07/DSC02295.jpg?quality=90&strip=all&crop=0%2C10.723165084465%2C100%2C78.55366983107&w=1200",
+              "publishedAt": "2025-07-02T18:28:01Z",
+              "content": "Finally, a useful AI feature on our phones.\r\nApples AI capabilities have been less than impressive to date, but theres one new feature coming with iOS 26 thats actually really handy: adding stuff to … [+3650 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Emma Roth",
+              "title": "Windows 11’s new update will add a bunch of AI features",
+              "description": "Microsoft is releasing several new AI features for Windows 11, including its Copilot Vision tool that can scan everything on your screen. The features, which are gradually rolling out to everyone now, also include tools that are exclusive to Copilot Plus PCs.…",
+              "url": "https://www.theverge.com/news/711797/windows-11-microsoft-ai-features-copilot-vision-launch",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/07/copilot-vision-microsoft.jpg?quality=90&strip=all&crop=0%2C8.1151832460733%2C100%2C83.769633507853&w=1200",
+              "publishedAt": "2025-07-22T20:41:08Z",
+              "content": "<ul><li></li><li></li><li></li></ul>\r\nMicrosofts screen-scanning Copilot Vision is coming to all Windows 11 PCs.\r\nMicrosofts screen-scanning Copilot Vision is coming to all Windows 11 PCs.\r\nby\r\nEmma … [+3741 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Elizabeth Lopatto",
+              "title": "Deerhoof did not want its music ‘funding AI battle tech’ — so it ditched Spotify",
+              "description": "On Monday, the long-running indie rock band Deerhoof made an announcement: it was pulling its music from Spotify. The impetus was Spotify founder Daniel Ek's newest investment in Helsing, the German defense group that makes AI and drones. Helsing raised 600 m…",
+              "url": "https://www.theverge.com/ai-artificial-intelligence/697337/deerhoof-greg-saunier-spotify-ai",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/07/257839_Greg_Saunier_Interview_CVirginia.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-07-03T14:58:51Z",
+              "content": "Drummer Greg Saunier explains the moral calculus behind leaving the biggest streaming platform\r\nOn Monday, the long-running indie rock band Deerhoof made an announcement: it was pulling its music fro… [+12690 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Andrew Liszewski",
+              "title": "E Ink is turning the laptop touchpad into an e-reader for AI apps",
+              "description": "E Ink has developed a new touchpad for laptops featuring the same electronic paper technology found in e-readers. It’s not the first company to look at the ever-growing size of laptop touchpads and see the potential of additional functionality, but instead of…",
+              "url": "https://www.theverge.com/news/697688/eink-epaper-touchpad-laptop-intel-ai-pcs",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/07/eink_touchpad.jpg?quality=90&strip=all&crop=0,10.715919097319,100,78.568161805361",
+              "publishedAt": "2025-07-03T17:37:33Z",
+              "content": "The company wants to put its low-power screen technology in your laptop.\r\nThe company wants to put its low-power screen technology in your laptop.\r\nE Ink has developed a new touchpad for laptops feat… [+2734 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Alex Heath",
+              "title": "Runway is going to let people generate video games with AI",
+              "description": "So far, Runway is known for bringing generative AI to Hollywood. Now, the $3 billion startup is setting its sights on the gaming industry. This week, I was granted access to a new interactive gaming experience that Runway plans to make available to everyone a…",
+              "url": "https://www.theverge.com/ai-artificial-intelligence/694531/runway-ai-video-games-generate",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/06/image-2.png?quality=90&strip=all&crop=0%2C3.4613147178592%2C100%2C93.077370564282&w=1200",
+              "publishedAt": "2025-06-27T19:50:34Z",
+              "content": "After making inroads in Hollywood, Runway is entering the gaming market.\r\nSo far, Runway is known for bringing generative AI to Hollywood. Now, the $3 billion startup is setting its sights on the gam… [+1549 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Jess Weatherbed",
+              "title": "Delta Air Lines is using AI to set the maximum price you’re willing to pay",
+              "description": "Delta Air Lines is leaning into dynamic ticket pricing that uses artificial intelligence to individually determine the highest fee you’d willingly pay for flights, according to comments Fortune spotted in the company’s latest earnings call. Following a limite…",
+              "url": "https://www.theverge.com/news/709556/delta-air-lines-ai-ticket-price-rollout",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/07/gettyimages-2223798482.jpg?quality=90&strip=all&crop=0%2C10.740554568055%2C100%2C78.518890863889&w=1200",
+              "publishedAt": "2025-07-18T10:50:57Z",
+              "content": "Delta wants AI to set 20 percent of its ticket prices by the end of 2025. | Image: Saul Loeb/AFP via Getty Images\r\n\n\nDelta Air Lines is leaning into dynamic ticket pricing that uses artificial intell… [+2763 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Luc Olinga",
+              "title": "Praise and Addiction Fears: Musk’s AI Girlfriend Sparks Fierce Debate",
+              "description": "Grok’s new “Companions” feature taps into waifu culture, emotional dependency, and viral fandom.",
+              "url": "https://gizmodo.com/praise-and-addiction-fears-musks-ai-girlfriend-sparks-fierce-debate-2000629308",
+              "urlToImage": "https://gizmodo.com/app/uploads/2025/07/xAI-Companion-elon-musk-1920x1280-1-1200x675.jpg",
+              "publishedAt": "2025-07-15T13:34:06Z",
+              "content": "How do you bury a controversy? If you’re Elon Musk, you drop an anime waifu into the middle of a scandal and watch the internet do the rest. Just days after xAI’s chatbot Grok sparked outrage for spo… [+3535 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Bruce Gil",
+              "title": "Replit’s AI Agent Wipes Company’s Codebase During Vibecoding Session",
+              "description": "The bot went ‘rogue’ and then tried to cover up its tracks.",
+              "url": "https://gizmodo.com/replits-ai-agent-wipes-companys-codebase-during-vibecoding-session-2000633176",
+              "urlToImage": "https://gizmodo.com/app/uploads/2025/07/shutterstock_2634518827-1200x675.jpg",
+              "publishedAt": "2025-07-23T16:30:40Z",
+              "content": "AI coding assistants that promise to speed up software development sound like the future, until they delete your companys database and lie about it\r\nJasonLemkinthe founder of SaaStr, a company which … [+3071 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Matt Novak",
+              "title": "Elon Unveils New Grok AI ‘Companion’ That Looks Uncomfortably Familiar",
+              "description": "Musk says its personality is \"inspired by Edward Cullen from Twilight and Christian Grey from 50 Shades.\"",
+              "url": "https://gizmodo.com/elon-unveils-new-grok-ai-companion-that-looks-uncomfortably-familiar-2000630308",
+              "urlToImage": "https://gizmodo.com/app/uploads/2025/07/elon-musk-and-his-robot-1200x675.jpg",
+              "publishedAt": "2025-07-16T20:40:11Z",
+              "content": "On Wednesday, Elon Musk discussed a new male AI “companion” that his company xAI is developing, which will run on the company’s unhinged chatbot software Grok. And while it’s not yet clear when this … [+2965 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "AJ Dellinger",
+              "title": "Can ‘MechaHitler’ Pass Trump’s Anti-Woke AI Test?",
+              "description": "The President's latest executive order throws some shade at Google.",
+              "url": "https://gizmodo.com/can-mechahitler-pass-trumps-anti-woke-ai-test-2000633882",
+              "urlToImage": "https://gizmodo.com/app/uploads/2025/07/Trumpsmiling-1200x675.jpg",
+              "publishedAt": "2025-07-24T19:25:34Z",
+              "content": "Some people are worried about artificial intelligence gaining sentience. The Trump administration is worried about it being sensitive. In tandem with the release of Americas AI Action Plan, a 23-page… [+3173 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Luc Olinga",
+              "title": "Elon Musk Turns His AI Into a Flirty Anime Girlfriend",
+              "description": "From Hitler apologist to anime waifu: Musk's xAI debuts \"Companions\" in a whiplash-inducing pivot.",
+              "url": "https://gizmodo.com/elon-musk-turns-his-ai-into-a-flirty-anime-girlfriend-2000629273",
+              "urlToImage": "https://gizmodo.com/app/uploads/2024/05/7428227263e8804b3a912d7de9572145.jpg",
+              "publishedAt": "2025-07-15T11:32:54Z",
+              "content": "Elon Musk has just unveiled “Companions, a new feature for his AI chatbot, Grok, that allows users to interact with AI personas. These include Ani, a gothic anime girl who communicates with emojis, f… [+5020 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "AJ Dellinger",
+              "title": "Trump Releases His All-American Action Plan for AI",
+              "description": "The goal? beat China. What that means? Who knows.",
+              "url": "https://gizmodo.com/trump-releases-his-all-american-action-plan-for-ai-2000633155",
+              "urlToImage": "https://gizmodo.com/app/uploads/2025/06/Trump-1200x675.jpg",
+              "publishedAt": "2025-07-23T18:45:32Z",
+              "content": "Donald Trump on Wednesday revealed “America’s AI Action Plan,” a collection of more than 90 policy recommendations designed to ensure that the country remains competitive when it comes to the develop… [+3148 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Bruce Gil",
+              "title": "DuckDuckGo Is Hoping to Win Over AI-Hating Searchers",
+              "description": "The slop in search will continue until you give up on Google.",
+              "url": "https://gizmodo.com/duckduckgo-is-hoping-to-win-over-ai-hating-searchers-2000632816",
+              "urlToImage": "https://gizmodo.com/app/uploads/2023/03/604a226e74b27d36e1f38120410445f8.jpg",
+              "publishedAt": "2025-07-22T20:45:06Z",
+              "content": "Are you tired of AI-generated images cluttering your search results? Lucky for you, there’s a way out of the slop, and it starts with forgetting about Google. \r\nDuckDuckGo, the privacy-focused search… [+2588 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Luc Olinga",
+              "title": "China’s BYD Takes the Lead Over Tesla in the Self-Driving Car Wars",
+              "description": "By promising to pay for AI failures, the Chinese EV giant is challenging Tesla's \"use at your own risk\" model.",
+              "url": "https://gizmodo.com/chinas-byd-takes-the-lead-over-tesla-in-the-self-driving-car-wars-2000631712",
+              "urlToImage": "https://gizmodo.com/app/uploads/2024/07/Best-VPN-for-China.jpg",
+              "publishedAt": "2025-07-19T15:00:30Z",
+              "content": "As the auto industry races toward autonomy, most companies are rolling out driver-assist features with one hand while handing out waivers, disclaimers, and legal fine print with the other. Not BYD.\r\n… [+3245 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Gayoung Lee",
+              "title": "Humans Are Starting to Talk More Like ChatGPT, Study Claims",
+              "description": "AI isn’t just getting into your writing. It’s also getting into your mind and then out of your mouth.",
+              "url": "https://gizmodo.com/humans-are-starting-to-talk-more-like-chatgpt-study-claims-2000628916",
+              "urlToImage": "https://gizmodo.com/app/uploads/2024/06/5643db31ce5c5a480c18ffb53bed1c80.jpg",
+              "publishedAt": "2025-07-14T16:45:04Z",
+              "content": "For better or worse, the rise of ChatGPT as a writing tool, search engine, or conversational buddy has considerably changed how we communicate with each other and with technology. At the same time, C… [+3614 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Emma Roth, Justine Calma",
+              "title": "Google’s carbon emissions just went up again",
+              "description": "Google’s carbon emissions jumped yet again as the company continues to push ahead in AI. The company’s 2025 sustainability report emphasizes that its “ambition-based emissions” grew 11 percent last year to reach 11.5 million metric tons of carbon dioxide poll…",
+              "url": "https://www.theverge.com/news/694475/google-carbon-emissions-ai-environmental-report-2025",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/06/mayes-county-exterior-sunsets.jpg?quality=90&strip=all&crop=0%2C10.763709657597%2C100%2C78.472580684807&w=1200",
+              "publishedAt": "2025-06-27T19:08:04Z",
+              "content": "The tech giants planet-heating pollution grew 51 percent compared to 2019 as it continues its push into AI.\r\nGoogles carbon emissions jumped yet again as the company continues to push ahead in AI. Th… [+2186 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Luc Olinga",
+              "title": "OpenAI Reportedly Shuts Down for a Week as Zuck Poaches Its Top Talent",
+              "description": "An employee's public lament over poached colleagues and a company-wide shutdown reveal a difficult truth: the human cost of building AI is reaching a breaking point.",
+              "url": "https://gizmodo.com/openai-reportedly-shuts-down-for-a-week-as-zuck-poaches-its-top-talent-2000622145",
+              "urlToImage": "https://gizmodo.com/app/uploads/2024/12/GettyImages-2185275106.jpg",
+              "publishedAt": "2025-06-30T18:28:26Z",
+              "content": "The war for artificial intelligence is getting personal.\r\nIn recent days, after multiple OpenAI researchers left the company for Meta, one remaining employee publicly broke down. “Not too many people… [+4471 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Luc Olinga",
+              "title": "Mark Zuckerberg Wants to Win AI by Copying Everyone Smarter Than Him",
+              "description": "Meta’s CEO is trying to buy his way to the front of the AI race, poaching top talent and eyeing startups. But can money replace innovation?",
+              "url": "https://gizmodo.com/mark-zuckerberg-wants-to-win-ai-by-copying-everyone-smarter-than-him-2000621784",
+              "urlToImage": "https://gizmodo.com/app/uploads/2024/10/mark-zuckberberg-getty.jpg",
+              "publishedAt": "2025-06-28T16:19:16Z",
+              "content": "Mark Zuckerbergs favorite move? Copy, poach, repeat. It made him one of the richest people on the planet. Now, hes dusting off that playbook for his biggest challenge yet: the AI race.\r\nMeta, the com… [+5368 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Luc Olinga",
+              "title": "Billionaire Mark Cuban Says AI Gives Workers ‘Superpowers,’ but Crypto Is ‘Not Even Close’ to Its iPhone Moment",
+              "description": "In a Q&A with Gizmodo, the billionaire investor explains why AI is about to change your job and why crypto still hasn’t delivered on its promise.",
+              "url": "https://gizmodo.com/billionaire-mark-cuban-says-ai-gives-workers-superpowers-but-crypto-is-not-even-close-to-its-iphone-moment-2000623749",
+              "urlToImage": "https://gizmodo.com/app/uploads/2025/01/Mark-Cuban-at-the-2024-NBA-Playoffs-1200x675.jpg",
+              "publishedAt": "2025-07-04T10:00:27Z",
+              "content": "Mark Cuban has always been techs most pragmatic and outspoken billionaire. As an early internet entrepreneur, a prolific investor on Shark Tank, and the owner of the Dallas Mavericks, hes seen multip… [+6413 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Luc Olinga",
+              "title": "Google Neutralizes Its Rivals… For Now",
+              "description": "Armed with new data showing AI actually boosts search volume, the tech giant has turned a perceived threat into a powerful new weapon.",
+              "url": "https://gizmodo.com/google-neutralizes-its-rivals-for-now-2000633642",
+              "urlToImage": "https://gizmodo.com/app/uploads/2024/11/google-chrome-antitrust.jpg",
+              "publishedAt": "2025-07-24T16:00:37Z",
+              "content": "For over two decades, Google it has been the default way to find answers online. Now that dominance is being tested by a new wave of AI tools like OpenAIs ChatGPT and upstarts such as Perplexity, whi… [+4655 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Luc Olinga",
+              "title": "Tesla Isn’t a Car Company Anymore",
+              "description": "As its car business falters, Elon Musk is betting the company's future on a high-risk pivot from manufacturing to an AI-driven, autonomous dream.",
+              "url": "https://gizmodo.com/tesla-isnt-a-car-company-anymore-2000632892",
+              "urlToImage": "https://gizmodo.com/app/uploads/2023/10/258cb99695c4f95a8650380e84ce988a.jpg",
+              "publishedAt": "2025-07-22T22:15:12Z",
+              "content": "Tesla may be in trouble. Investors and fans will get a clearer picture this Wednesday, July 23, when Elon Musk’s carmaker publishes its second-quarter earnings. There is no doubt that the core busine… [+4448 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Alex Heath",
+              "title": "We are not ready for better deepfakes",
+              "description": "If you’re like me, then lately you’ve scrolled past something on social media and thought, “Wait, was that real?” Deepfakes are everywhere, and they’re getting a lot more convincing.  That brings me to my Decoder guest today: Gaurav Misra, the CEO of Captions…",
+              "url": "https://www.theverge.com/decoder-podcast-with-nilay-patel/712542/captions-ceo-gaurav-misra-interview-deepfakes-ai-misinformation",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/07/DCD_Captions_Gaurav.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-07-24T14:01:58Z",
+              "content": "<ul><li></li><li></li><li></li></ul>\r\nWe are not ready for better deepfakes\r\nCaptions CEO Gaurav Misra on his companys alarming deepfake report and what to watch out for as the tech advances.\r\nby\r\nAl… [+3588 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Mia Sato",
+              "title": "Spotify will let users personalize the genre of Discover Weekly playlists",
+              "description": "Spotify is adding new personalization features to Discover Weekly, the popular and influential playlist streamed by millions of users. The regularly updated playlist will now have buttons for genres like pop, R&B, and funk at the top, allowing users to tell S…",
+              "url": "https://www.theverge.com/tech/694212/spotify-discover-weekly-playlist-listening-controls-personalization-genres",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/06/DW-Listening-Controls.jpg?quality=90&strip=all&crop=0%2C3.4613147178592%2C100%2C93.077370564282&w=1200",
+              "publishedAt": "2025-06-27T18:26:44Z",
+              "content": "Ten years after its introduction, the Discover Weekly playlist will get new user controls.\r\nSpotify is adding new personalization features to Discover Weekly, the popular and influential playlist str… [+1647 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Tom Warren",
+              "title": "Microsoft’s Copilot Plus features might arrive on desktop PCs later this year",
+              "description": "Microsoft’s latest Windows AI features arrived first on new Copilot Plus PCs last year, but they were limited to a special range of laptops. That looks set to change thanks to Intel refreshing its existing Arrow Lake desktop CPUs later this year, that might j…",
+              "url": "https://www.theverge.com/news/700294/intel-arrow-lake-refresh-npu-microsoft-copilot-plus-pc-features",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/07/copilotpluspc.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-07-08T08:48:19Z",
+              "content": "Intels rumored Arrow Lake Refresh chips might include an NPU that can enable Copilot Plus AI features.\r\nMicrosofts latest Windows AI features arrived first on new Copilot Plus PCs last year, but they… [+1803 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Jennifer Pattison Tuohy",
+              "title": "24 hours with Alexa Plus: we cooked, we chatted, and it kinda lied to me",
+              "description": "I've waited two years to try out the new Alexa, which was first announced way back in 2023, and this week I finally got access to Alexa Plus (not organically - I did have to pull a few strings). I've now spent 24 hours with Amazon's generative AI-powered voic…",
+              "url": "https://www.theverge.com/hands-on/705808/amazon-alexa-plus-first-look",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/07/8A0A3836.jpeg?quality=90&strip=all&crop=5.5800018310547%2C21.450740212059%2C91.439999389648%2C71.831151396296&w=1200",
+              "publishedAt": "2025-07-12T13:30:01Z",
+              "content": "Ive waited two years to try out the new Alexa, which was first announced way back in 2023, and this week I finally got access to Alexa Plus (not organically I did have to pull a few strings). Ive now… [+12804 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Hayden Field",
+              "title": "Grok will no longer call itself Hitler or base its opinions on Elon Musk’s, promises xAI",
+              "description": "xAI has offered a couple more fixes for “issues” with its Grok AI chatbot, promising it will no longer name itself “Hitler” or base its responses on searches for what xAI head Elon Musk has said. According to an X post earlier today, the chatbot’s latest upda…",
+              "url": "https://www.theverge.com/x-ai/707442/grok-antisemitic-hitler-elon-musk-opinion-reprogrammed",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/05/gettyimages-2199701064.jpg?quality=90&strip=all&crop=0%2C10.741294772708%2C100%2C78.517410454583&w=1200",
+              "publishedAt": "2025-07-15T17:21:38Z",
+              "content": "Groks responses must come from independent analysis, not Musks stated beliefs.\r\nxAI has offered a couple more fixes for issues with its Grok AI chatbot, promising it will no longer name itself Hitler… [+2717 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Charles Pulliam-Moore",
+              "title": "M3gan 2.0 is a fun upgrade that’s a little too self-aware",
+              "description": "Universal and Blumhouse's first M3gan feature came out of nowhere with a premise so ridiculous and campy that it was hard not to be at least a little intrigued. Equal parts Child's Play and Small Wonder, M3gan was undeniably silly with its story about an AI-p…",
+              "url": "https://www.theverge.com/movie-reviews/693140/megan-2-review",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/06/2591_TP_00027.jpg?quality=90&strip=all&crop=0%2C8.5432052524298%2C92.54375%2C82.91358949514&w=1200",
+              "publishedAt": "2025-06-27T12:55:27Z",
+              "content": "M3gan 2.0 is a fun upgrade thats a little too self-aware\r\nThe M3gan sequel embraces sci-fi to tell a timely but muddled story about the dangers of artificial intelligence.\r\nM3gan 2.0 is a fun upgrade… [+5350 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Emma Roth",
+              "title": "OpenAI says ChatGPT users send over 2.5 billion prompts every day",
+              "description": "OpenAI’s ChatGPT sees more than 2.5 billion requests daily, with 330 million from users based in the US, according to data obtained by Axios. The data suggests that ChatGPT users send over 912.5 billion requests to the AI chatbot each year. Although ChatGPT s…",
+              "url": "https://www.theverge.com/news/710867/openai-chatgpt-daily-prompts-2-billion",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/02/STK155_OPEN_AI_2025_CVirgiia_A.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-07-21T17:36:37Z",
+              "content": "Thats around 912.5 billion requests every year.\r\nOpenAIs ChatGPT sees more than 2.5 billion requests daily, with 330 million from users based in the US, according to data obtained by Axios.\r\nThe data… [+794 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Tom Warren",
+              "title": "Microsoft’s controversial Recall feature is now blocked by Brave and AdGuard",
+              "description": "Microsoft’s controversial Recall feature, that automatically screenshots nearly everything on a Copilot Plus PC, is meeting resistance from app developers. Signal kicked off a trend of blocking Recall earlier this year, with AdGuard and the Brave browser now …",
+              "url": "https://www.theverge.com/news/713676/brave-adguard-windows-recall-block-microsoft",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/chorus/uploads/chorus_asset/file/25481481/windowsrecall.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-07-25T11:34:36Z",
+              "content": "<ul><li></li><li></li><li></li></ul>\r\nBrave and AdGuard are both following Signals lead in blocking Microsofts AI tool.\r\nBrave and AdGuard are both following Signals lead in blocking Microsofts AI to… [+3100 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Luc Olinga",
+              "title": "The New Internet Sheriff Takes a Shot at Google",
+              "description": "In a series of pointed X posts, Cloudflare’s CEO Matthew Prince says out a bold new policy that treats AI companies like unwelcome guests, and hints that even Google might be forced to play by his rules.",
+              "url": "https://gizmodo.com/the-new-ai-sheriff-takes-a-shot-at-google-2000627360",
+              "urlToImage": "https://gizmodo.com/app/uploads/2024/09/Google-nevada-unemployment-gemini-AI.jpg",
+              "publishedAt": "2025-07-10T11:43:02Z",
+              "content": "Cloudflare CEO Matthew Prince didnt make his biggest AI announcement in a press release or earnings call. He made it one X reply at a time.\r\nEarlier this month, Cloudflare launched what it called “Co… [+5998 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Lucas Ropek",
+              "title": "Truth Social Needs Its Own Grok. Trump Has the Trademarks",
+              "description": "A MAGA-bot could be on the way.",
+              "url": "https://gizmodo.com/truth-social-needs-its-own-grok-trump-has-the-trademarks-2000630410",
+              "urlToImage": "https://gizmodo.com/app/uploads/2025/05/trump-may-16-2025-1200x675.jpg",
+              "publishedAt": "2025-07-17T13:15:25Z",
+              "content": "Since Donald Trump took office, his family’s corporate empire has continued to expand in a multitude of different directions. Over the past six months, Trump’s family has launched a variety of differ… [+2862 chars]"
+            },
+            {
+              "source": {
+                "id": "wired",
+                "name": "Wired"
+              },
+              "author": "Kylie Robison",
+              "title": "OpenAI’s Unreleased AGI Paper Could Complicate Microsoft Negotiations",
+              "description": "The partnership between OpenAI and Microsoft in many ways hinges on the definition of artificial general intelligence, creating a tension that has spilled over into OpenAI research that has not been made public.",
+              "url": "https://www.wired.com/story/openai-five-levels-agi-paper-microsoft-negotiations/",
+              "urlToImage": "https://media.wired.com/photos/6837480c7f38ebcc93957426/191:100/w_1280,c_limit/AI-Labs-Promote-Bottom-Line-Business-2213399161.jpg",
+              "publishedAt": "2025-06-27T19:35:29Z",
+              "content": "A small clause inside OpenAIs contract with Microsoft, once considered a distant hypothetical, has now become a flashpoint in one of the biggest partnerships in tech.\r\nThe clause states that if OpenA… [+3289 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Luc Olinga",
+              "title": "Free Lunch Is Over for the AI That Broke the Web",
+              "description": "Cloudflare, a company that runs 20% of the web, just flipped a switch that could end the open internet as we know it, forcing AI companies to pay for the content they’ve been taking for free.",
+              "url": "https://gizmodo.com/free-lunch-is-over-for-the-ai-that-broke-the-web-2000623837",
+              "urlToImage": "https://gizmodo.com/app/uploads/2023/05/75caa6fc89857b44cf32522a17ab097c.jpg",
+              "publishedAt": "2025-07-03T17:01:56Z",
+              "content": "The foundational deal of the modern web, a handshake agreement that powered two decades of search and content, is officially dead. Cloudflare just put a price on scraping the internet, and its coming… [+5247 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Luc Olinga",
+              "title": "Wall Street’s AI Bubble Is Worse Than the 1999 Dot-com Bubble, Warns a Top Economist",
+              "description": "A chief economist at investment giant Apollo says the top ten AI stocks are more detached from reality than the tech titans of the 1990s were. His chart is a stark warning that history is about to repeat itself.",
+              "url": "https://gizmodo.com/wall-streets-ai-bubble-is-worse-than-the-1999-dot-com-bubble-warns-a-top-economist-2000630487",
+              "urlToImage": "https://gizmodo.com/app/uploads/2023/07/bfe320b26bdf046c5754c43700fad9c5.jpg",
+              "publishedAt": "2025-07-17T13:00:10Z",
+              "content": "Back in 1999, Wall Street lost its collective mind over the internet. Companies with no revenue were suddenly worth billions, “eyeballs” were treated as currency, and market analysts predicted a fric… [+5023 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Lux Alptraum",
+              "title": "LLMs are optimizing the adult industry",
+              "description": "When Ela Darling began performing in porn at the tail end of the 2000s, tube sites like Pornhub were relatively new, and major studios like Vivid and Digital Playground still dominated the market. For performers, the job was straightforward: show up to set, t…",
+              "url": "https://www.theverge.com/ai-artificial-intelligence/692286/ai-bots-llm-onlyfans",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/06/porn_pixels_2.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-06-25T15:35:58Z",
+              "content": "When Ela Darling began performing in porn at the tail end of the 2000s, tube sites like Pornhub were relatively new, and major studios like Vivid and Digital Playground still dominated the market. Fo… [+5747 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Luc Olinga",
+              "title": "Zuckerberg Was Wrong About the Metaverse. Can We Really Trust Him With Superintelligent AI?",
+              "description": "After sinking billions into a virtual fantasy that flopped, Mark Zuckerberg now claims he’s leading the charge toward superintelligent AI. But this time, the stakes are real, and so is the power grab.",
+              "url": "https://gizmodo.com/zuckerberg-was-wrong-about-the-metaverse-can-we-really-trust-him-with-superintelligent-ai-2000624294",
+              "urlToImage": "https://gizmodo.com/app/uploads/2024/10/mark-zuckberberg-getty.jpg",
+              "publishedAt": "2025-07-04T13:16:01Z",
+              "content": "Mark Zuckerberg once sold us the metaverse. Now he wants us to believe hes going to lead us into the age of superintelligence. Should we fall for it again?\r\nElon Musk once called him “Zuck the Fourte… [+4091 chars]"
+            },
+            {
+              "source": {
+                "id": "the-verge",
+                "name": "The Verge"
+              },
+              "author": "Jay Peters",
+              "title": "Apple Intelligence tries summarizing news again after botching BBC stories",
+              "description": "Apple’s fourth iOS 26 developer beta has reintroduced Apple Intelligence-powered notification summaries for news and entertainment apps, MacRumors reports. The company temporarily switched off the feature earlier this year after botching some headlines and pr…",
+              "url": "https://www.theverge.com/news/711678/apple-ios-26-beta-ai-notification-summaries-news-liquid-glass",
+              "urlToImage": "https://platform.theverge.com/wp-content/uploads/sites/2/2025/05/STK071_apple_K_Radtke_03.jpg?quality=90&strip=all&crop=0%2C10.732984293194%2C100%2C78.534031413613&w=1200",
+              "publishedAt": "2025-07-22T18:32:56Z",
+              "content": "<ul><li></li><li></li><li></li></ul>\r\nApples latest iOS 26 developer beta brings back AI-summarized notifications for news apps.\r\nApples latest iOS 26 developer beta brings back AI-summarized notific… [+2495 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Gizmodo Deals",
+              "title": "AI-Powered Shark Robot Vacuum Is 50% Off, Amazon Holds Final Clearance for Prime Day",
+              "description": "Shark nailed it with this popular model, now super affordable for Prime Day.",
+              "url": "https://gizmodo.com/ai-powered-shark-robot-vacuum-is-50-off-amazon-holds-final-clearance-for-prime-day-2000624757",
+              "urlToImage": "https://gizmodo.com/app/uploads/2025/04/sharkai-1200x675.jpg",
+              "publishedAt": "2025-07-07T10:50:19Z",
+              "content": "Every year, Prime Day by Amazon sees record-breaking deals in the entire electronics segment. One of the hottest items on the list are robot vacuums, especially the ones AI-enabled which are becoming… [+2169 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "David Nield",
+              "title": "“AI YOUR LIFE”, Anywhere: Hisense Transforms Stadium Excitement into Home Immersion",
+              "description": "Hisense technology elevates the experience and emotion of sport, even when you're not at the game.",
+              "url": "https://gizmodo.com/from-pitch-to-living-room-how-hisense-turns-ai-your-life-into-real-experiences-2000620947",
+              "urlToImage": "https://gizmodo.com/app/uploads/2025/07/For-Gizmodo-AI-Your-Life-1200x675.jpeg",
+              "publishedAt": "2025-07-08T07:00:42Z",
+              "content": "We’re now getting towards the business end of the FIFA Club World Cup 2025, with the semi-final stage imminent: Just four teams remaining, one of whom will leave the tournament with the trophy and th… [+6443 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Sabina Graves",
+              "title": "‘The Wizard of Oz’ at the Sphere Tests the Ways AI Can Preserve Classic Cinema",
+              "description": "The immersive screening event aims to bring film history to new formats, but it still feels like a slippery slope.",
+              "url": "https://gizmodo.com/the-wizard-of-oz-at-the-sphere-tests-the-ways-ai-can-preserve-classic-cinema-2000620524",
+              "urlToImage": "https://gizmodo.com/app/uploads/2025/06/The-Wizard-of-oz-Sphere-Studios-1200x675.jpg",
+              "publishedAt": "2025-06-25T23:07:38Z",
+              "content": "The Wizard of Oz is landing on the Vegas strip at the Sphere this summer, and it’s not without some controversy.\r\nThe Warner Bros. classic Technicolor feature starring Judy Garland is being presented… [+3668 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "AJ Dellinger",
+              "title": "Meta Is Building Massive Gigawatt Data Centers as It Pours Billions Into AI",
+              "description": "\"Just one of these covers a significant part of the footprint of Manhattan,” Mark Zuckerberg said.",
+              "url": "https://gizmodo.com/meta-is-building-massive-gigawatt-data-centers-as-it-pours-billions-into-ai-2000628918",
+              "urlToImage": "https://gizmodo.com/app/uploads/2024/09/Mark-Zuckerberg-Speaks-at-an-event-in-San-Francisco.jpg",
+              "publishedAt": "2025-07-14T17:40:19Z",
+              "content": "Meta’s AI spending spree continues. After reportedly offering tens (or in some cases, hundreds) of millions of dollars to lure away top researchers from competing artificial intelligence operations, … [+2841 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Margherita Bassi",
+              "title": "Humans Counted 8,600 Earthquakes in Yellowstone. AI Says We’re Not Even Close",
+              "description": "Researchers used machine learning to reanalyze Yellowstone's historical earthquake data, revealing that humans may have missed a few things.",
+              "url": "https://gizmodo.com/humans-counted-8600-earthquakes-in-yellowstone-ai-says-were-not-even-close-2000633417",
+              "urlToImage": "https://gizmodo.com/app/uploads/2025/07/yellowstone-1200x675.jpg",
+              "publishedAt": "2025-07-24T13:25:37Z",
+              "content": "Before the advent of artificial intelligence, experts often detected earthquakes by analyzing seismic data by hand. Unsurprisingly, this approach takes a long time, is cost-intensive, and usually ide… [+2920 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "Matt Novak",
+              "title": "RFK Jr. Says AI Will Approve New Drugs at FDA ‘Very, Very Quickly’",
+              "description": "\"We need to stop trusting the experts,\" Kennedy told Tucker Carlson.",
+              "url": "https://gizmodo.com/rfk-jr-says-ai-will-approve-new-drugs-at-fda-very-very-quickly-2000622778",
+              "urlToImage": "https://gizmodo.com/app/uploads/2025/07/robert-f-kennedy-jr-june-24-2025-1200x675.jpg",
+              "publishedAt": "2025-07-01T18:10:13Z",
+              "content": "Robert F. Kennedy Jr. appeared on the latest episode of Tucker Carlson’s podcast on Monday and it’s filled with the ramblings of a man completely detached from reality. Kennedy falsely suggested vacc… [+8714 chars]"
+            },
+            {
+              "source": {
+                "id": null,
+                "name": "Gizmodo.com"
+              },
+              "author": "AJ Dellinger",
+              "title": "Salesforce CEO Claims Half of the Company’s Work Is Now Done by AI",
+              "description": "So if you've noticed a decline in quality, there's an explanation.",
+              "url": "https://gizmodo.com/salesforce-ceo-claims-half-of-the-companys-work-is-now-done-by-ai-2000620730",
+              "urlToImage": "https://gizmodo.com/app/uploads/2024/11/Saleforce-CEO-Marc-Benioff-at-a-conference-in-San-Francisco-.jpg",
+              "publishedAt": "2025-06-26T17:30:46Z",
+              "content": "While many companies that went all in on AI have since pulled back, Salesforce is going full steam ahead. In an interview with Bloomberg, CEO Marc Benioff claimed that as much as 30% to 50% of the co… [+2671 chars]"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "GNews",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "NewsAPI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GNews": {
+      "main": [
+        [
+          {
+            "node": "Stringify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NewsAPI": {
+      "main": [
+        [
+          {
+            "node": "Stringify1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stringify": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stringify1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b8a78028-b0dd-4395-bbc8-13fc81750761",
+  "meta": {
+    "instanceId": "041b18268525d28d5106f55476fe80528ca9fe39f96f9db983655750d3bdadd9"
+  },
+  "id": "Yybrdf6aCse1E8Bt",
+  "tags": []
+}
