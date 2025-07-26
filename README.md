@@ -11,7 +11,8 @@
 - Http Request Nodes
     - Based on the number of sources you want to consume news from.
     - Attach in parallel next to the trigger node to fetch news from each source.
-- 
+- AI Agent
+- Telegram
 
 ## Steps
 - Create a trigger node.
