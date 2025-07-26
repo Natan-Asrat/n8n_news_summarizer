@@ -32,7 +32,7 @@
             },
             {
               "name": "apikey",
-              "value": "e864ac6db7e46c9af69325fbab7ecc6a"
+              "value": "GNEWS-API-KEY-HERE"
             },
             {
               "name": "lang",
@@ -72,7 +72,7 @@
           "parameters": [
             {
               "name": "X-Api-Key",
-              "value": "ae473d83f7d744709fd727036736624a"
+              "value": "NEWSAPI-API-KEY-HERE"
             }
           ]
         },
@@ -1767,7 +1767,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "b8a78028-b0dd-4395-bbc8-13fc81750761",
+  "versionId": "d96d1f4e-9ce4-4868-bea8-9b08554a39e5",
   "meta": {
     "instanceId": "041b18268525d28d5106f55476fe80528ca9fe39f96f9db983655750d3bdadd9"
   },
