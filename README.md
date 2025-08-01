@@ -2,6 +2,12 @@
 - Scheduled to send you daily news at 10 AM through Telegram.
 - You can check it out by importing `News_Summarizer.json` into n8n.
 
+## Output
+
+![Output](./screenshots/sent.png)
+
+- It has successfully generated a summary of the news and sent it to my Telegram through a Telegram Bot.
+
 ## Nodes
 
 ![nodes](./screenshots/final.png)
@@ -76,13 +82,6 @@
     - Choose Markdown as parse mode.
 
     ![send](./screenshots/send_message.png)
-
-
-## Output
-
-![Output](./screenshots/sent.png)
-
-- It has successfully generated a summary of the news and sent it to my Telegram through a Telegram Bot.
 
 ## Contact
  - LinkedIn: [Natan Asrat](https://linkedin.com/in/natan-asrat)
